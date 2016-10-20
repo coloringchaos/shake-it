@@ -1,0 +1,169 @@
+<!-- //====================== MOBILE VERSION  ===========================
+///////================================================================== -->
+
+<html>
+
+   <head>
+      <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+
+      <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+      <script type="text/javascript">
+
+         // alert("shake your phone as hard as you can to get the highest score");
+         ////////////////////////// SOCKET STUFF /////////////////////////////
+
+         var socket = io.connect('/');
+                
+         var highAll;
+         socket.on('connect', function() {
+            console.log("Connected");
+         });
+
+         //RECEIVE HIGH VALUE FROM THE SERVER
+         socket.on('highAll', function(data){
+            console.log("RECEIVED HIGH FROM SERVER = " + data);
+            document.getElementById('div3').innerHTML = data;
+            highAll = data;
+            console.log("highAll: " + highAll);
+         });
+
+         //GAME WAS RESET
+         socket.on('reset', function(){
+            console.log("restart happened");
+            // alert('enter new game!');
+            document.getElementById('div1').innerHTML = '0';
+            myHigh = 0;
+            document.getElementById('div3').innerHTML = '0';
+         })
+
+         /////////////////////// ACCELEROMETER STUFF /////////////////////// 
+
+         var myHigh = 0;
+
+         handleDeviceMotionEvent = function(e) {
+ 
+            var acc = e.acceleration,
+            maxAcc = Math.abs(acc.x + acc.y + acc.z);
+            theAcc = Math.floor(maxAcc);
+
+            //display the current acceleration
+            div2.innerHTML = theAcc;    
+
+            //if we have acceleration, send this to the value to the server
+            if (theAcc > 0) {
+               sendAccel(theAcc);
+            }
+
+            //save my high value
+            if (theAcc > myHigh){
+               myHigh = theAcc;
+               document.getElementById('div1').innerHTML = myHigh;
+               socket.emit('phoneHigh', myHigh);
+            }
+         };
+ 
+         window.addEventListener('devicemotion', handleDeviceMotionEvent, false);
+
+         var sendAccel = function(message) {
+            console.log("acceleration: " + message);
+            socket.emit('accelValue', message);
+         };
+
+      </script>
+   
+   </head>
+
+
+   <body>
+      <div class="flex-container">
+         <div class="section one">
+            <p class="text">your highest score</p>
+            <div class="message" id="div1"></div>
+         </div>
+
+         <div class="section two">
+            <p class="text">your current acceleration</p>
+            <div class="message" id="div2"></div>
+         </div>
+
+         <div class="section three">
+            <p class="text">highest score overall</p>
+            <div class="message" id="div3"></div>
+         </div>
+      </div>
+      
+<!--       <div class="flex-container">
+         <div class="flex-item one">
+            <p class="text">your highest score</p>
+            <div class="message" id="div1">0</div>
+         </div>
+
+         <div class="flex-item two">
+            <p class="text">your current acceleration</p>
+            <div class="message" id="div2">0</div>
+         </div>
+
+         <div class="flex-item three">
+            <p class="text">highest score overall</p>
+            <div class="message" id="div3">0</div>
+         </div>
+      </div> -->
+
+
+
+
+   </body>
+
+
+   <style>
+
+      body{
+         font-family: 'Montserrat', sans-serif;
+         text-align: center;
+         margin:0;
+         padding:0;
+         color:white;
+         letter-spacing: .05em;
+      }
+      p{
+         margin:0;
+         padding:1em;
+      }
+/*
+      .flex-container{
+         display: -webkit-box;
+         display: -moz-box;
+         display: -ms-flexbox;
+         display: -webkit-flex;
+         display:flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;        
+         height:100%;       
+      }
+      .flex-item{
+         width:100%;
+         height:100%;
+      }*/
+      .one{
+         background-color:#4D6A93;
+      }
+      .two{
+         background-color:#B869AA;
+      }
+      .three{
+         background-color:#AE5C5F;
+      }
+      .section{
+         width:100%;
+         height:33.4%;
+      }
+      .text{
+         font-size:2em;
+      }
+      .message{
+         font-size: 9em;
+      }
+   </style>
+</html>
